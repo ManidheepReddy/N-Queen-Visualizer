@@ -1,7 +1,4 @@
-﻿// main.cpp
-// Interactive N‑Queens Visualizer using C++, OpenGL, GLFW, GLEW, and Dear ImGui 1.60
-// Assumes you have VBO/VAO/Texture classes: Shader, VertexArray, VertexBuffer, IndexBuffer, Texture2D
-
+// Interactive N‑Queens Visualizer using C++, OpenGL, GLFW, GLEW, and  ImGui 1.60
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -14,9 +11,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
-// -----------------------------------------------------------------------------
-// Simple backtracking solver that collects all solutions for N‑Queens
-// -----------------------------------------------------------------------------
+
 void solveNQueens(int N, int row,
     std::vector<int>& cols,
     std::vector<std::vector<int>>& solutions)
@@ -40,9 +35,7 @@ void solveNQueens(int N, int row,
     }
 }
 
-// -----------------------------------------------------------------------------
-// Load an RGBA texture from file using stb_image into OpenGL
-// -----------------------------------------------------------------------------
+
 GLuint LoadTexture(const char* filepath) {
     int w, h, channels;
     unsigned char* data = stbi_load(filepath, &w, &h, &channels, 4);
@@ -74,11 +67,9 @@ GLuint LoadTexture(const char* filepath) {
     return tex;
 }
 
-// -----------------------------------------------------------------------------
-// Entry point
-// -----------------------------------------------------------------------------
+
 int main() {
-    // GLFW + OpenGL init
+
     if (!glfwInit()) return -1;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -90,33 +81,32 @@ int main() {
     glfwMakeContextCurrent(window);
     glewInit();
 
-    // ImGui init
+
     ImGui::CreateContext();
     ImGui_ImplGlfwGL3_Init(window, true);
     ImGui::StyleColorsDark();
 
-    // Load queen PNG as OpenGL texture
     GLuint queenTex = LoadTexture("OpenGL\\res\\textures\\Flower3.png");
     if (!queenTex) {
         std::cerr << "Cannot continue without queen.png\n";
         return -1;
     }
 
-    // State
+
     int N = 8;
     std::vector<std::vector<int>> solutions;
     std::vector<int> cols;
-    float speed = 1.0f;          // seconds per solution
+    float speed = 1.0f;        
     bool autoPlay = false;
     size_t current = 0;
     auto lastTime = std::chrono::high_resolution_clock::now();
 
-    // Main loop
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         ImGui_ImplGlfwGL3_NewFrame();
 
-        // Sidebar: controls
+       
         ImGui::Begin("Controls");
         ImGui::SliderInt("Board size (N)", &N, 4, 12);
         if (ImGui::Button("Compute Solutions")) {
@@ -140,7 +130,6 @@ int main() {
         }
         ImGui::End();
 
-        // Auto‑advance
         if (autoPlay && !solutions.empty()) {
             auto now = std::chrono::high_resolution_clock::now();
             float dt = std::chrono::duration<float>(now - lastTime).count();
@@ -150,7 +139,7 @@ int main() {
             }
         }
 
-        // Draw board
+
         ImGui::SetNextWindowPos({ 200, 0 });
         ImGui::SetNextWindowSize({ 600, 600 });
         ImGui::Begin("Board", nullptr,
@@ -158,11 +147,10 @@ int main() {
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove);
 
-        // Determine cell size
+  
         float boardSize = ImGui::GetWindowSize().x;
         float cell = boardSize / N;
 
-        // Draw grid background
         auto draw = ImGui::GetWindowDrawList();
         ImVec2 p = ImGui::GetWindowPos();
         for (int i = 0; i <= N; i++) {
@@ -174,7 +162,7 @@ int main() {
                 IM_COL32(0, 0, 0, 255));
         }
 
-        // Draw queens
+     
         if (!solutions.empty()) {
             auto& sol = solutions[current];
             for (int r = 0; r < N; r++) {
@@ -182,13 +170,13 @@ int main() {
                     ImVec2 cell_p0 = { p.x + c * cell, p.y + r * cell };
                     ImVec2 cell_p1 = { p.x + (c + 1) * cell,
                                        p.y + (r + 1) * cell };
-                    // alternate shading
+                 
                     bool dark = (r + c) & 1;
                     draw->AddRectFilled(cell_p0, cell_p1,
                         dark ? IM_COL32(200, 200, 200, 255)
                         : IM_COL32(255, 255, 255, 255));
                     if (sol[r] == c) {
-                        // draw queen texture
+                       
                         ImGui::SetCursorScreenPos(cell_p0);
                         ImGui::Image(
                             (void*)(intptr_t)queenTex,
@@ -198,15 +186,15 @@ int main() {
             }
         }
 
-        ImGui::End(); // Board
+        ImGui::End(); 
 
-        // Render
+     
         ImGui::Render();
         ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     }
 
-    // Cleanup
+  
     ImGui_ImplGlfwGL3_Shutdown();
     ImGui::DestroyContext();
     glfwTerminate();
